@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Преподаватели</h2>
+
+<form method="POST" action="{{ url_for('teachers.teacher_add') }}" class="add-form">
+    <input type="text" name="name" placeholder="ФИО (Иванов Сергей Владимирович)" required>
+    <input type="text" name="short_name" placeholder="Кратко (ИВ)">
+    <input type="color" name="color" value="#3498db" title="Цвет карточки">
+
+    <div class="subjects-select">
+        <p>Дисциплины:</p>
+        {% for s in subjects %}
+        <label>
+            <input type="checkbox" name="subject_ids" value="{{ s.id }}">
+            {{ s.name }}
+        </label>
+        {% else %}
+        <p><i>Сначала добавьте дисциплины</i></p>
+        {% endfor %}
+    </div>
+
+    <button type="submit">Добавить преподавателя</button>
+</form>
+
+<hr>
+
+{% for t in teachers %}
+<div class="teacher-card" style="border-left: 8px solid {{ t.color }}">
+    <form method="POST" action="{{ url_for('teachers.teacher_edit', teacher_id=t.id) }}">
+        <input type="text" name="name" value="{{ t.name }}">
+        <input type="text" name="short_name" value="{{ t.short_name or '' }}">
+        <input type="color" name="color" value="{{ t.color }}">
+
+        <div class="subjects-select">
+            {% for s in subjects %}
+            <label>
+                <input type="checkbox" name="subject_ids" value="{{ s.id }}"
+                    {% if s in t.subjects %}checked{% endif %}>
+                {{ s.name }}
+            </label>
+            {% endfor %}
+        </div>
+
+        <button type="submit">Сохранить</button>
+    </form>
+    <form method="POST" action="{{ url_for('teachers.teacher_delete', teacher_id=t.id) }}">
+        <button type="submit" onclick="return confirm('Удалить?')">Удалить</button>
+    </form>
+</div>
+{% else %}
+<p>Преподавателей пока нет</p>
+{% endfor %}
+{% endblock %}

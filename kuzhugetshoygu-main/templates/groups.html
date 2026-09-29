@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Группы</h2>
+
+<form method="POST" action="{{ url_for('groups.group_add') }}" class="add-form">
+    <input type="text" name="name" placeholder="Название (П-21)" required>
+    <input type="text" name="speciality" placeholder="Специальность">
+    <input type="number" name="course" placeholder="Курс">
+    <button type="submit">Добавить</button>
+</form>
+
+<table>
+    <thead>
+        <tr><th>Название</th><th>Специальность</th><th>Курс</th><th>Действия</th></tr>
+    </thead>
+    <tbody>
+        {% for g in groups %}
+        <tr>
+            <form method="POST" action="{{ url_for('groups.group_edit', group_id=g.id) }}">
+                <td><input type="text" name="name" value="{{ g.name }}"></td>
+                <td><input type="text" name="speciality" value="{{ g.speciality or '' }}"></td>
+                <td><input type="number" name="course" value="{{ g.course or '' }}"></td>
+                <td>
+                    <button type="submit">Сохранить</button>
+            </form>
+                    <form method="POST" action="{{ url_for('groups.group_delete', group_id=g.id) }}" style="display:inline">
+                        <button type="submit" onclick="return confirm('Удалить группу?')">Удалить</button>
+                    </form>
+                </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">Групп пока нет</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Расписание — все группы</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 15px; }
+        h1 { text-align: center; margin: 0 0 15px 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #333; padding: 6px; vertical-align: top; text-align: center; }
+        th { background: #eee; }
+        .day-row td { background: #ddd; font-weight: bold; text-align: left; padding: 6px 10px; }
+        .para-num { background: #f5f5f5; font-weight: bold; width: 80px; text-align: left; }
+        .lesson-cell { min-width: 130px; height: 60px; font-size: 11px; }
+        .lesson-teacher { font-weight: bold; font-size: 12px; }
+        .lesson-subject { font-style: italic; }
+        .lesson-info { color: #444; margin-top: 2px; }
+        @media print {
+            body { padding: 0; }
+            @page { margin: 0.8cm; size: landscape; }
+            button { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Расписание занятий</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>День / пара</th>
+            {% for g in groups %}
+                <th>{{ g.name }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in days %}
+            <tr class="day-row">
+                <td colspan="{{ groups|length + 1 }}">{{ d }}</td>
+            </tr>
+            {% for p in paras %}
+                <tr>
+                    <td class="para-num">{{ p }} пара</td>
+                    {% for g in groups %}
+                        <td class="lesson-cell">
+                            {% for lesson in schedule[g.id][d][p] %}
+                                {% set teacher = teachers | selectattr('id', 'equalto', lesson.teacher_id) | first %}
+                                {% set subject = subjects | selectattr('id', 'equalto', lesson.subject_id) | first %}
+                                <div class="lesson-teacher">{{ teacher.name if teacher else '?' }}</div>
+                                <div class="lesson-subject">{{ subject.name if subject else '?' }}</div>
+                                <div class="lesson-info">
+                                    {% if lesson.week1_lesson %}1н: {{ lesson.week1_lesson }}{% endif %}
+                                    {% if lesson.week2_lesson %} / 2н: {{ lesson.week2_lesson }}{% endif %}
+                                    {% if lesson.classroom %}<br>каб. {{ lesson.classroom.name }}{% endif %}
+                                </div>
+                                {% if not loop.last %}<hr style="border:none;border-top:1px dashed #ccc;margin:4px 0;">{% endif %}
+                            {% endfor %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<p style="text-align: center; margin-top: 30px;">
+    <button onclick="window.print()">🖨 Печать / Сохранить в PDF</button>
+    <button onclick="window.close()">Закрыть</button>
+</p>
+
+</body>
+</html>

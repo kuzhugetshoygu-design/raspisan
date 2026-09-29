@@ -1,0 +1,352 @@
+/* === Общее === */
+body { font-family: Arial, sans-serif; margin: 0; background: #eef1f5; }
+nav { background: #2c3e50; padding: 12px 20px; }
+nav a { color: #fff; margin-right: 18px; text-decoration: none; font-weight: bold; }
+nav a:hover { text-decoration: underline; }
+main { padding: 20px; }
+h1 { color: #2c3e50; margin: 0; }
+
+/* === Справочники === */
+table { border-collapse: collapse; width: 100%; background: #fff; margin-top: 15px; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+th { background: #ecf0f1; }
+.add-form { background: #fff; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+.add-form input, .add-form button { padding: 6px 10px; margin-right: 5px; }
+.teacher-card { background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 6px; }
+.subjects-select label { display: block; margin: 3px 0; }
+.flash.success { background: #d4edda; padding: 10px; border-radius: 4px; }
+.flash.error   { background: #f8d7da; padding: 10px; border-radius: 4px; }
+button { cursor: pointer; }
+
+/* === Главный экран === */
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.main-layout { display: flex; gap: 20px; align-items: flex-start; }
+.schedule-area { flex: 1; overflow-x: auto; }
+.schedule-table {
+    border-collapse: collapse;
+    background: #fff;
+    width: 100%;
+    min-width: 700px;
+}
+.schedule-table th,
+.schedule-table td {
+    border: 1px solid #cbd5e1;
+    padding: 6px;
+    vertical-align: top;
+    text-align: center;
+}
+.schedule-table th {
+    background: #34495e;
+    color: #fff;
+    font-weight: bold;
+    padding: 8px;
+}
+.day-row td.day-name {
+    background: #95a5a6;
+    color: #fff;
+    font-weight: bold;
+    text-align: left;
+    padding: 8px 12px;
+    letter-spacing: 1px;
+}
+.para-num {
+    background: #ecf0f1;
+    font-weight: bold;
+    width: 90px;
+    text-align: left;
+    padding: 8px;
+}
+.cell { min-width: 160px; height: 100px; transition: background 0.2s; }
+.cell:hover { background: #f0f8ff; }
+
+/* === Карточка занятия === */
+.lesson-card {
+    position: relative;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 4px;
+    color: #fff;
+    font-size: 12px;
+    text-align: left;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    line-height: 1.35;
+    cursor: grab;
+}
+.lesson-card:active { cursor: grabbing; }
+.lesson-teacher { font-weight: bold; font-size: 13px; margin-bottom: 3px; }
+.lesson-subject { font-style: italic; margin: 2px 0; }
+.lesson-weeks { font-size: 11px; opacity: 0.95; margin-top: 3px; }
+.lesson-classroom { font-size: 11px; opacity: 0.9; margin-top: 2px; }
+.lesson-type { font-size: 11px; opacity: 0.85; font-style: italic; }
+.lesson-del {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    background: rgba(0,0,0,0.35);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+}
+.lesson-del:hover { background: #c0392b; }
+
+/* === Подсветка конфликтной карточки === */
+.lesson-card-conflict {
+    outline: 3px solid #e74c3c;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+    70%  { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+/* === Панель преподавателей === */
+.teachers-panel {
+    width: 280px;
+    background: #fff;
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.teachers-panel h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 6px;
+}
+.teacher-block {
+    background: #f9fafb;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+/* === Раскрытие преподавателя === */
+.teacher-header {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+.teacher-header:hover { background: #eef1f5; border-radius: 4px; padding-left: 4px; }
+.teacher-toggle { font-size: 14px; color: #666; }
+
+.teacher-name { font-weight: bold; font-size: 13px; }
+.teacher-short { font-size: 12px; color: #666; }
+
+/* === Список дисциплин в панели === */
+.teacher-subjects { margin: 8px 0 0 0; padding-left: 18px; font-size: 12px; }
+.teacher-subjects li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.teacher-subjects .muted { color: #999; font-style: italic; }
+
+.subject-add-btn {
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    width: 22px;
+    height: 22px;
+    font-size: 15px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+}
+.subject-add-btn:hover { background: #219150; }
+
+/* === Модальное окно === */
+.modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+.modal.hidden { display: none; }
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.modal-content h3 { margin-top: 0; color: #2c3e50; }
+.modal-content label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #333;
+}
+.modal-content select,
+.modal-content input {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 2px;
+    box-sizing: border-box;
+}
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+/* === Drag & Drop === */
+.sortable-ghost {
+    opacity: 0.4;
+    background: #3498db !important;
+}
+
+/* === Кнопки в шапке === */
+.schedule-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-print {
+    background: #2980b9;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.btn-print:hover { background: #21618c; }
+
+.print-group-link {
+    color: #fff;
+    text-decoration: none;
+    font-size: 12px;
+    margin-left: 5px;
+    opacity: 0.6;
+}
+.print-group-link:hover { opacity: 1; }
+
+/* === Стили для печати === */
+@media print {
+    nav,
+    .teachers-panel,
+    .schedule-header button,
+    .lesson-del,
+    .modal,
+    .flash,
+    .print-group-link {
+        display: none !important;
+    }
+
+    body {
+        background: #fff;
+        margin: 0;
+    }
+
+    main {
+        padding: 0;
+    }
+
+    .schedule-header h1 {
+        text-align: center;
+        font-size: 20pt;
+        margin-bottom: 15px;
+    }
+
+    .main-layout {
+        display: block;
+    }
+
+    .schedule-table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 9pt;
+    }
+
+    .schedule-table th,
+    .schedule-table td {
+        border: 1px solid #000;
+        padding: 4px 6px;
+    }
+
+    .schedule-table th {
+        background: #ddd !important;
+        color: #000;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .day-row td.day-name {
+        background: #bbb !important;
+        color: #000;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .lesson-card {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        box-shadow: none;
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+
+    .lesson-card-conflict {
+        animation: none;
+        outline: none;
+    }
+
+    @page {
+        size: landscape;
+        margin: 10mm;
+    }
+}
+.schedule-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-print-all {
+    background: #34495e;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.btn-print-all:hover {
+    background: #22303f;
+}
+
+.print-btn {
+    color: #fff;
+    text-decoration: none;
+    margin-left: 6px;
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+.print-btn:hover {
+    opacity: 1;
+}

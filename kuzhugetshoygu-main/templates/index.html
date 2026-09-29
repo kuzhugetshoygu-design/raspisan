@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="schedule-header">
+    <h1>Расписание</h1>
+    <div class="schedule-actions">
+        <a href="{{ url_for('schedule.print_all') }}"
+           target="_blank"
+           class="btn-print-all">🖨 Печать всего расписания</a>
+        <button onclick="document.getElementById('addLessonForm').classList.remove('hidden')">
+            + Добавить занятие
+        </button>
+    </div>
+</div>
+
+<!-- Форма добавления занятия -->
+<div id="addLessonForm" class="modal hidden">
+    <div class="modal-content">
+        <h3>Добавление занятия</h3>
+        <form method="POST" action="{{ url_for('schedule.lesson_add') }}">
+            <label>Преподаватель:
+                <select name="teacher_id" id="add_teacher_id" required onchange="filterSubjects()">
+                    <option value="">— выберите —</option>
+                    {% for t in teachers %}
+                        <option value="{{ t.id }}">{{ t.name }} ({{ t.short_name }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>Дисциплина:
+                <select name="subject_id" id="add_subject_id" required>
+                    <option value="">— выберите —</option>
+                </select>
+            </label>
+
+            <label>Группа:
+                <select name="group_id" required>
+                    <option value="">— выберите —</option>
+                    {% for g in groups %}
+                        <option value="{{ g.id }}">{{ g.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>День:
+                <select name="day" required>
+                    {% for d in days %}
+                        <option value="{{ d }}">{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>1 неделя:
+                <select name="week1_lesson">
+                    <option value="">—</option>
+                    {% for p in paras %}<option value="{{ p }}">{{ p }} пара</option>{% endfor %}
+                </select>
+            </label>
+
+            <label>2 неделя:
+                <select name="week2_lesson">
+                    <option value="">—</option>
+                    {% for p in paras %}<option value="{{ p }}">{{ p }} пара</option>{% endfor %}
+                </select>
+            </label>
+
+            <label>Кабинет:
+                <input type="text" name="classroom" placeholder="305">
+            </label>
+
+            <label>Тип занятия:
+                <select name="lesson_type">
+                    <option value="">—</option>
+                    <option>Лекция</option>
+                    <option>Практика</option>
+                    <option>Лабораторная</option>
+                </select>
+            </label>
+
+            <div class="modal-buttons">
+                <button type="button" onclick="document.getElementById('addLessonForm').classList.add('hidden')">Отмена</button>
+                <button type="submit">Добавить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Основная сетка -->
+<div class="main-layout">
+
+    <div class="schedule-area">
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th class="day-col">День / пара</th>
+                    {% for g in groups %}
+                        <th>
+                            {{ g.name }}
+                            <a href="{{ url_for('schedule.print_group', group_id=g.id) }}"
+                               target="_blank"
+                               class="print-btn"
+                               title="Печать расписания группы">🖨</a>
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in days %}
+                    <tr class="day-row">
+                        <td class="day-name" colspan="{{ groups|length + 1 }}">{{ d }}</td>
+                    </tr>
+                    {% for p in paras %}
+                        <tr>
+                            <td class="para-num">{{ p }} пара</td>
+                            {% for g in groups %}
+                                <td class="cell"
+                                    data-group-id="{{ g.id }}"
+                                    data-day="{{ d }}"
+                                    data-para="{{ p }}">
+                                    {% for lesson in schedule[g.id][d][p] %}
+                                        {% set teacher = teachers | selectattr('id', 'equalto', lesson.teacher_id) | first %}
+                                        {% set subject = subjects | selectattr('id', 'equalto', lesson.subject_id) | first %}
+                                        <div class="lesson-card {% if lesson.id in conflict_ids %}lesson-card-conflict{% endif %}"
+                                             data-lesson-id="{{ lesson.id }}"
+                                             style="background: {{ teacher.color if teacher else '#ccc' }};"
+                                             onclick="openEditLesson({{ lesson.id }})">
+
+                                            <div class="lesson-teacher">{{ teacher.name if teacher else '?' }}</div>
+                                            <div class="lesson-subject">{{ subject.name if subject else '?' }}</div>
+                                            <div class="lesson-weeks">
+                                                {% if lesson.week1_lesson %}1н: {{ lesson.week1_lesson }} пара{% endif %}
+                                                {% if lesson.week1_lesson and lesson.week2_lesson %}<br>{% endif %}
+                                                {% if lesson.week2_lesson %}2н: {{ lesson.week2_lesson }} пара{% endif %}
+                                            </div>
+                                            {% if lesson.classroom %}
+                                                <div class="lesson-classroom">каб. {{ lesson.classroom.name }}</div>
+                                            {% endif %}
+                                            {% if lesson.lesson_type %}
+                                                <div class="lesson-type">{{ lesson.lesson_type }}</div>
+                                            {% endif %}
+
+                                            <button type="button" class="lesson-del"
+                                                    onclick="event.stopPropagation(); deleteLesson({{ lesson.id }});">×</button>
+                                        </div>
+                                    {% endfor %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <aside class="teachers-panel">
+        <h3>Преподаватели</h3>
+        {% for t in teachers %}
+            <div class="teacher-block" style="border-left: 6px solid {{ t.color }};">
+                <div class="teacher-header" onclick="toggleTeacher({{ t.id }})">
+                    <div>
+                        <div class="teacher-name">{{ t.name }}</div>
+                        <div class="teacher-short">({{ t.short_name }})</div>
+                    </div>
+                    <div class="teacher-toggle">▸</div>
+                </div>
+
+                <ul class="teacher-subjects" id="subjects-{{ t.id }}" style="display: none;">
+                    {% for s in t.subjects %}
+                        <li>
+                            <span>{{ s.name }}</span>
+                            <button type="button" class="subject-add-btn"
+                                    onclick="openAddLesson({{ t.id }}, {{ s.id }}); event.stopPropagation();"
+                                    title="Добавить занятие">+</button>
+                        </li>
+                    {% else %}
+                        <li class="muted">нет дисциплин</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <p>Преподавателей пока нет</p>
+        {% endfor %}
+    </aside>
+
+</div>
+
+<!-- Модальное окно редактирования -->
+<div id="editLessonModal" class="modal hidden">
+    <div class="modal-content">
+        <h3>Редактирование занятия</h3>
+        <form method="POST" id="editLessonForm" action="">
+            <label>Группа:
+                <select name="group_id" id="edit_group_id" required>
+                    {% for g in groups %}
+                        <option value="{{ g.id }}">{{ g.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>День:
+                <select name="day" id="edit_day" required>
+                    {% for d in days %}
+                        <option value="{{ d }}">{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>Преподаватель:
+                <select name="teacher_id" id="edit_teacher_id" required>
+                    {% for t in teachers %}
+                        <option value="{{ t.id }}">{{ t.name }} ({{ t.short_name }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>Дисциплина:
+                <select name="subject_id" id="edit_subject_id" required>
+                    {% for s in subjects %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>1 неделя:
+                <select name="week1_lesson" id="edit_week1">
+                    <option value="">—</option>
+                    {% for p in paras %}<option value="{{ p }}">{{ p }} пара</option>{% endfor %}
+                </select>
+            </label>
+
+            <label>2 неделя:
+                <select name="week2_lesson" id="edit_week2">
+                    <option value="">—</option>
+                    {% for p in paras %}<option value="{{ p }}">{{ p }} пара</option>{% endfor %}
+                </select>
+            </label>
+
+            <label>Кабинет:
+                <input type="text" name="classroom" id="edit_classroom">
+            </label>
+
+            <label>Тип занятия:
+                <select name="lesson_type" id="edit_lesson_type">
+                    <option value="">—</option>
+                    <option>Лекция</option>
+                    <option>Практика</option>
+                    <option>Лабораторная</option>
+                </select>
+            </label>
+
+            <div class="modal-buttons">
+                <button type="button" onclick="document.getElementById('editLessonModal').classList.add('hidden')">Отмена</button>
+                <button type="submit">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const LESSONS_DATA = {{ lessons_data | tojson }};
+    const TEACHERS_DATA = {{ teachers_data | tojson }};
+</script>
+
+{% endblock %}

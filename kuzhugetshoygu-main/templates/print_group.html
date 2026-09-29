@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Расписание — {{ group.name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { text-align: center; margin-bottom: 5px; }
+        h2 { text-align: center; color: #666; font-weight: normal; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 8px; vertical-align: top; }
+        th { background: #eee; text-align: center; }
+        .day-row td { background: #ddd; font-weight: bold; text-align: left; }
+        .para-num { background: #f5f5f5; font-weight: bold; width: 80px; text-align: left; }
+        .lesson-cell { min-width: 200px; height: 60px; }
+        .lesson-teacher { font-weight: bold; }
+        .lesson-subject { font-style: italic; margin: 2px 0; }
+        .lesson-info { font-size: 12px; color: #444; margin-top: 3px; }
+        @media print {
+            body { padding: 0; }
+            @page { margin: 1cm; }
+            button { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Расписание занятий</h1>
+<h2>Группа: {{ group.name }}{% if group.speciality %} — {{ group.speciality }}{% endif %}</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>День / пара</th>
+            <th>1-я неделя</th>
+            <th>2-я неделя</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in days %}
+            <tr class="day-row">
+                <td colspan="3">{{ d }}</td>
+            </tr>
+            {% for p in paras %}
+                <tr>
+                    <td class="para-num">{{ p }} пара</td>
+
+                    <td class="lesson-cell">
+                        {% set l = schedule[d][p]['w1'] %}
+                        {% if l %}
+                            {% set teacher = teachers | selectattr('id', 'equalto', l.teacher_id) | first %}
+                            {% set subject = subjects | selectattr('id', 'equalto', l.subject_id) | first %}
+                            <div class="lesson-teacher">{{ teacher.name if teacher else '?' }}</div>
+                            <div class="lesson-subject">{{ subject.name if subject else '?' }}</div>
+                            <div class="lesson-info">
+                                {% if l.classroom %}каб. {{ l.classroom.name }}{% endif %}
+                                {% if l.lesson_type %} • {{ l.lesson_type }}{% endif %}
+                            </div>
+                        {% else %}
+                            <span style="color: #bbb;">—</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="lesson-cell">
+                        {% set l = schedule[d][p]['w2'] %}
+                        {% if l %}
+                            {% set teacher = teachers | selectattr('id', 'equalto', l.teacher_id) | first %}
+                            {% set subject = subjects | selectattr('id', 'equalto', l.subject_id) | first %}
+                            <div class="lesson-teacher">{{ teacher.name if teacher else '?' }}</div>
+                            <div class="lesson-subject">{{ subject.name if subject else '?' }}</div>
+                            <div class="lesson-info">
+                                {% if l.classroom %}каб. {{ l.classroom.name }}{% endif %}
+                                {% if l.lesson_type %} • {{ l.lesson_type }}{% endif %}
+                            </div>
+                        {% else %}
+                            <span style="color: #bbb;">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<p style="text-align: center; margin-top: 30px;">
+    <button onclick="window.print()">🖨 Печать / Сохранить в PDF</button>
+    <button onclick="window.close()">Закрыть</button>
+</p>
+
+</body>
+</html>
